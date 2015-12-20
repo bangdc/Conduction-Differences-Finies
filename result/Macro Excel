@@ -1,0 +1,182 @@
+Sub CopyData()
+    
+    Set dataFile = Workbooks.Open(ThisWorkbook.Path & "\data.txt")
+    dataFile.Sheets(1).Range("A1").CurrentRegion.Copy _
+        ThisWorkbook.Sheets("Data").Range("C2")
+    dataFile.Close (False)
+    
+    Set timeFile = Workbooks.Open(ThisWorkbook.Path & "\time.txt")
+    timeFile.Sheets(1).Range("A1").CurrentRegion.Copy _
+        ThisWorkbook.Sheets("Data").Range("A2")
+    timeFile.Close (False)
+    
+    Set angularFile = Workbooks.Open(ThisWorkbook.Path & "\angular.txt")
+    angularFile.Sheets(1).Range("A1").CurrentRegion.Copy _
+        ThisWorkbook.Sheets("Data").Range("C1")
+    angularFile.Close (False)
+    
+    Set radiusFile = Workbooks.Open(ThisWorkbook.Path & "\radius.txt")
+    radiusFile.Sheets(1).Range("A1").CurrentRegion.Copy _
+        ThisWorkbook.Sheets("Data").Range("B2")
+    radiusFile.Close (False)
+    
+    ThisWorkbook.Sheets("Data").Range("A1").Value = "Time"
+    ThisWorkbook.Sheets("Data").Range("B1").Value = "Radius"
+End Sub
+
+Sub TimeFilter()
+'
+' TimeFilter Macro
+' Select a specific time to plot graph
+    Dim rng As Range
+    Set rng = Range(Range("A3"), Range("A3").SpecialCells(xlLastCell))
+    
+    rng.EntireRow.Delete
+    
+    Sheets("Data").Range("tblTemperature[#All]").AdvancedFilter Action:=xlFilterCopy, _
+    CriteriaRange:=Sheets("Graph").Range("A1:A2"), _
+    CopyToRange:=Sheets("Graph").Range("A3"), _
+    Unique:=False
+    
+    Dim newrng As Range
+    Set newrng = Range(Range("A3"), Range("A3").SpecialCells(xlLastCell))
+    
+    Sheets("Graph").ListObjects.Add(xlSrcRange, newrng, , xlYes).Name = "x"
+    
+'
+End Sub
+Sub CreateTable()
+'
+' CreateTable Macro
+' Create table of data
+'
+    Dim rng As Range
+
+    Set rng = Range(Range("A1"), Range("A1").SpecialCells(xlLastCell))
+    Sheets("Data").ListObjects.Add(xlSrcRange, rng, , xlYes).Name = "tblTemperature"
+'
+End Sub
+Sub PlotGraph()
+'
+' PlotGraph Macro
+' Plot graph of temperature at a selected time.
+'
+
+'
+    Sheets("Graph").Shapes.AddChart2(307, xlSurface).Select
+    Range("C3:I8").Select
+    Sheets("Graph").Shapes.AddChart2(307, xlSurface).Select
+    ActiveChart.SetSourceData Source:=Range("Graph!$C$3:$I$8")
+    Sheets("Graph").Shapes("Chart 3").IncrementLeft 183.75
+    Sheets("Graph").Shapes("Chart 3").IncrementTop -171.75
+    ActiveChart.SetElement (msoElementPrimaryCategoryAxisTitleAdjacentToAxis)
+    ActiveChart.SetElement (msoElementPrimaryValueAxisTitleAdjacentToAxis)
+    ActiveChart.SetElement (msoElementSeriesAxisTitleRotated)
+    ActiveChart.Axes(xlSeries, xlPrimary).AxisTitle.Text = "Angle"
+    Selection.Format.TextFrame2.TextRange.Characters.Text = "Angle"
+    With Selection.Format.TextFrame2.TextRange.Characters(1, 5).ParagraphFormat
+        .TextDirection = msoTextDirectionLeftToRight
+        .Alignment = msoAlignCenter
+    End With
+    With Selection.Format.TextFrame2.TextRange.Characters(1, 5).Font
+        .BaselineOffset = 0
+        .Bold = msoFalse
+        .NameComplexScript = "+mn-cs"
+        .NameFarEast = "+mn-ea"
+        .Fill.Visible = msoTrue
+        .Fill.ForeColor.RGB = RGB(89, 89, 89)
+        .Fill.Transparency = 0
+        .Fill.Solid
+        .Size = 10
+        .Italic = msoFalse
+        .Kerning = 12
+        .Name = "+mn-lt"
+        .UnderlineStyle = msoNoUnderline
+        .Strike = msoNoStrike
+    End With
+    ActiveChart.Axes(xlCategory).AxisTitle.Select
+    ActiveChart.Axes(xlCategory, xlPrimary).AxisTitle.Text = "Radius"
+    Selection.Format.TextFrame2.TextRange.Characters.Text = "Radius"
+    With Selection.Format.TextFrame2.TextRange.Characters(1, 6).ParagraphFormat
+        .TextDirection = msoTextDirectionLeftToRight
+        .Alignment = msoAlignCenter
+    End With
+    With Selection.Format.TextFrame2.TextRange.Characters(1, 6).Font
+        .BaselineOffset = 0
+        .Bold = msoFalse
+        .NameComplexScript = "+mn-cs"
+        .NameFarEast = "+mn-ea"
+        .Fill.Visible = msoTrue
+        .Fill.ForeColor.RGB = RGB(89, 89, 89)
+        .Fill.Transparency = 0
+        .Fill.Solid
+        .Size = 10
+        .Italic = msoFalse
+        .Kerning = 12
+        .Name = "+mn-lt"
+        .UnderlineStyle = msoNoUnderline
+        .Strike = msoNoStrike
+    End With
+    ActiveChart.Axes(xlValue).AxisTitle.Select
+    ActiveChart.Axes(xlValue, xlPrimary).AxisTitle.Text = "Temperature"
+    Selection.Format.TextFrame2.TextRange.Characters.Text = "Temperature"
+    With Selection.Format.TextFrame2.TextRange.Characters(1, 11).ParagraphFormat
+        .TextDirection = msoTextDirectionLeftToRight
+        .Alignment = msoAlignCenter
+    End With
+    With Selection.Format.TextFrame2.TextRange.Characters(1, 11).Font
+        .BaselineOffset = 0
+        .Bold = msoFalse
+        .NameComplexScript = "+mn-cs"
+        .NameFarEast = "+mn-ea"
+        .Fill.Visible = msoTrue
+        .Fill.ForeColor.RGB = RGB(89, 89, 89)
+        .Fill.Transparency = 0
+        .Fill.Solid
+        .Size = 10
+        .Italic = msoFalse
+        .Kerning = 12
+        .Name = "+mn-lt"
+        .UnderlineStyle = msoNoUnderline
+        .Strike = msoNoStrike
+    End With
+    ActiveChart.ChartArea.Select
+    Sheets("Graph").Shapes("Chart 3").ScaleWidth 1.1968751094, msoFalse, _
+        msoScaleFromTopLeft
+    Sheets("Graph").Shapes("Chart 3").ScaleHeight 1.5399307378, msoFalse, _
+        msoScaleFromTopLeft
+    ActiveChart.ChartTitle.Select
+    ActiveChart.ChartTitle.Text = "Graph of temperature"
+    Selection.Format.TextFrame2.TextRange.Characters.Text = "Graph of temperature"
+    With Selection.Format.TextFrame2.TextRange.Characters(1, 20).ParagraphFormat
+        .TextDirection = msoTextDirectionLeftToRight
+        .Alignment = msoAlignCenter
+    End With
+    With Selection.Format.TextFrame2.TextRange.Characters(1, 20).Font
+        .BaselineOffset = 0
+        .Bold = msoFalse
+        .NameComplexScript = "+mn-cs"
+        .NameFarEast = "+mn-ea"
+        .Fill.Visible = msoTrue
+        .Fill.ForeColor.RGB = RGB(89, 89, 89)
+        .Fill.Transparency = 0
+        .Fill.Solid
+        .Size = 14
+        .Italic = msoFalse
+        .Kerning = 12
+        .Name = "+mn-lt"
+        .UnderlineStyle = msoNoUnderline
+        .Spacing = 0
+        .Strike = msoNoStrike
+    End With
+    ActiveChart.PlotArea.Select
+    ActiveChart.Floor.Select
+    ActiveChart.FullSeriesCollection(1).XValues = "=Graph!$B$4:$B$8"
+End Sub
+Sub scrollbar()
+'
+' scrollbar Macro
+'
+
+'
+End Sub
