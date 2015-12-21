@@ -83,6 +83,9 @@ int main()
     FILE *angularFile;
     angularFile=fopen("result/angular.txt","w");
 
+    FILE *inputFile;
+    inputFile=fopen("result/input.txt","w");
+
     // Start calculation
     for (n = 0; n< numberIntervalTimes; n++) {
         //Calculation at any time interval
@@ -185,13 +188,31 @@ int main()
     }
     for (n = 0; n< numberIntervalTimes; n++) {
         for(i=0; i<numberNodeRadius; i++){
-            fprintf(timeFile,"%lf\n",nTime(n));
+            fprintf(timeFile,"%d\t%lf\n",n,nTime(n));
             fprintf(radiusFile,"%lf\n",iRadius(i));
         }
     }
     for(j=0; j<numberNodeAngular; j++){
         fprintf(angularFile,"%lf\t",jAngular(j));
     }
+
+    fprintf( inputFile, "Calculation time \t %lf \t [s]\n", calculationTime);
+    fprintf( inputFile, "Number of interval times  \t %d\n", numberIntervalTimes);
+    fprintf( inputFile, "Time interval \t %lf \t[s]\n", deltaTime);
+    fprintf( inputFile, "Number of interval radius  \t %d\n", numberNodeRadius);
+    fprintf( inputFile, "Radius interval \t %lf [m]\n", deltaRadius);
+    fprintf( inputFile, "Number of interval angular  \t %d\n", numberNodeAngular);
+    fprintf( inputFile, "Angular interval \t %lf \t[rad]\n", deltaAngular);
+
+    fprintf( inputFile, "Thermal conductivity \t %lf \t[J/K]\n", lamda);
+    fprintf( inputFile, "Density \t %lf \t[kg/m3]\n", rho);
+    fprintf( inputFile, "Heat specific pressure constant \t %lf \t[J/(kg.K)]\n", cp);
+    fprintf( inputFile, "Constant K \t %lf\n", constantK);
+    fprintf( inputFile, "Radius \t %lf \t[m]\n", radius);
+    fprintf( inputFile, "Temperature infinitive  \t %lf \t[K]\n", temperatureInfini);
+    fprintf( inputFile, "Temperature initial \t %lf \t[K]\n", temperatureInitial);
+
+    fclose(inputFile);
     fclose(datFile);
     fclose(timeFile);
     fclose(radiusFile);

@@ -1,0 +1,14 @@
+Calculation time 	 100.000000 	 [s]
+Number of interval times  	 1000
+Time interval 	 0.100100 	[s]
+Number of interval radius  	 5
+Radius interval 	 0.025000 [m]
+Number of interval angular  	 7
+Angular interval 	 0.523599 	[rad]
+Thermal conductivity 	 400.000000 	[J/K]
+Density 	 8930.000000 	[kg/m3]
+Heat specific pressure constant 	 385.000000 	[J/(kg.K)]
+Constant K 	 100.000000
+Radius 	 0.100000 	[m]
+Temperature infinitive  	 293.000000 	[K]
+Temperature initial 	 353.000000 	[K]
