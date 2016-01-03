@@ -16,6 +16,18 @@ double 	lamda,
         commonCoeff,
         radius,
         calculationTime;
+
+int 	numberIntervalTimes,
+        numberNodeRadius,
+        numberNodeAngular;
+
+int N;
+int M;
+
+int runtTestProgram;
+
+double 	** temperature, ** temperatureFlag, A, B, C, D, E;
+
 /*The support functions*/
 void    getInput();
 void    printResult();
@@ -29,30 +41,21 @@ double	iRadius();
 double	jAngular();
 double 	nTime();
 
-int 	numberIntervalTimes,
-        numberNodeRadius,
-        numberNodeAngular;
-
-int N;
-int M;
-
-int runtTestProgram;
-
-double 	** temperature, ** temperatureFlag, A, B, C, D, E;
-
 int main()
 {
     int n,i,j;
     double temp1, temp2, temp3, temp4, temp5;
 
+    /*Call getInput function, which will ask user for input parameters of problem.*/
     getInput();
 
+    /*If user selected option 1, that means running program to solve problem with material is Cu.*/
     if(runtTestProgram == 1)
     {
         lamda = 400;
         rho = 8930;
         cp = 385;
-        constantK = 100;
+        constantK = 5;
         radius = 0.1;
         temperatureInfini = 293;
         temperatureInitial = 353;
@@ -60,20 +63,24 @@ int main()
         calculationTime = 100;
         numberIntervalTimes = 1000;
         numberNodeRadius = 5;
-        numberNodeAngular = 7;
+        numberNodeAngular = 5;
     }
     /*Manipulating the input parameters*/
     deltaAngular 	=	PI / (numberNodeAngular - 1);
     deltaRadius 	=	radius / (numberNodeRadius - 1);
     deltaTime 	    =	calculationTime / (numberIntervalTimes - 1);
 
+    /*The common coefficient, corresponds to Z in the REPORT*/
     commonCoeff		=	(lamda*deltaTime)/(rho*cp);
 
+    /*Total number of nodes, devising the radius*/
     N = numberNodeRadius-1;
+    /*Total number of nodes, devising the angular PI*/
     M = numberNodeAngular-1;
 
-    /*	Init temperature array */
+    /*Initiate temperature array, which will store the temperature of each node, at the current instant*/
     temperature = (double **) malloc(numberNodeRadius*sizeof(double *));
+    /*Initiate temperatureFlag array, which will store the temperature of each node, at the most previous instant*/
     temperatureFlag     =   (double **) malloc(numberNodeRadius*sizeof(double *));
     for (i = 0; i < numberNodeRadius; i++) {
         temperature[i] = (double *)malloc(numberNodeAngular*sizeof(double));
@@ -81,25 +88,26 @@ int main()
     }
 
     /*Open necessary files to write the result*/
+    /*File data.txt - located in folder result - store temperature of each node, at each instant*/
     FILE *datFile;
     datFile=fopen("result/data.txt","w");
-
+    /*File time.txt - located in folder result - store the time(seconds) corresponds to each instant*/
     FILE *timeFile;
     timeFile=fopen("result/time.txt","w");
-
+    /*File radius.txt - located in folder result - store the nodes devising the radius*/
     FILE *radiusFile;
     radiusFile=fopen("result/radius.txt","w");
-
+    /*File angular.txt - located in folder result - store the nodes devising the angular PI*/
     FILE *angularFile;
     angularFile=fopen("result/angular.txt","w");
-
+    /*File input.txt - located in folder result - store the input parameters of problem*/
     FILE *inputFile;
     inputFile=fopen("result/input.txt","w");
 
     /*Start calculation*/
     /*Calculation at any interval time*/
     for (n = 0; n< numberIntervalTimes; n++) {
-        /*Calculation at any point [i,j], corresponding to radius and angular*/
+        /*Calculation at any point [i,j], corresponding to radius and angular node*/
         for(i=0; i<numberNodeRadius; i++){
             for(j=0; j<numberNodeAngular; j++){
                 /*Applying initial condition*/
@@ -118,7 +126,7 @@ int main()
                         if (j == 0){
                             /*At any point on the right radius of the center point*/
                             temp1 	=	temperatureFlag[i-1][0];
-                            //apply condition
+                            /*Apply condition */
                             temp2	=	temperatureFlag[i][1];
                             temp3	=	temperatureFlag[i][0];
                             temp4	=	temperatureFlag[i][1];
@@ -130,7 +138,7 @@ int main()
                             temp1 	=	temperatureFlag[i-1][M];
                             temp2	=	temperatureFlag[i][M-1];
                             temp3	=	temperatureFlag[i][M];
-                            //apply condition
+                            /*Apply condition */
                             temp4	=	temperatureFlag[i][M-1];
                             temp5	=	temperatureFlag[i+1][M];
 
@@ -152,11 +160,11 @@ int main()
                         if (j == 0){
                             /*At the extreme limit point on the right radius*/
                             temp1 	=	temperatureFlag[N-1][0];
-                            //apply condition
+                            /*Apply condition */
                             temp2	=	temperatureFlag[N][1];
                             temp3	=	temperatureFlag[N][0];
                             temp4	=	temperatureFlag[N][1];
-                            //apply condition
+                            /*Apply condition */
                             temp5	=	flag*(temperatureFlag[N][j] - temperatureInfini) + temperatureFlag[N-1][j];
 
                             temperature[N][0]	=	temperatureCalcul(i, j, temp1, temp2, temp3, temp4, temp5);
@@ -165,25 +173,26 @@ int main()
                             temp1 	=	temperatureFlag[N-1][M];
                             temp2	=	temperatureFlag[N][M-1];
                             temp3	=	temperatureFlag[N][M];
-                            //Apply condition
+                            /*Apply condition */
                             temp4	=	temperatureFlag[N][M-1];
-                            //Apply condition
+                            /*Apply condition */
                             temp5	=	flag*(temperatureFlag[N][j] - temperatureInfini) + temperatureFlag[N-1][j];
 
                             temperature[N][M]	=	temperatureCalcul(i, j, temp1, temp2, temp3, temp4, temp5);
                         } else {
-                            //At any other points on the boundary
+                            /*At any other points on the boundary*/
                             temp1 	=	temperatureFlag[N-1][j];
                             temp2	=	temperatureFlag[N][j-1];
                             temp3	=	temperatureFlag[N][j];
                             temp4	=	temperatureFlag[N][j+1];
-                            //Apply condition
+                            /*Apply condition */
                             temp5	=	flag*(temperatureFlag[N][j] - temperatureInfini) + temperatureFlag[N-1][j];
 
                             temperature[N][j]	=	temperatureCalcul(i, j, temp1, temp2, temp3, temp4, temp5);
                         }
                     }
                 }
+                /*Write temperature to file data.txt*/
                 fprintf(datFile,"%lf\t",temperature[i][j]);
                 if(j == M){
                     fprintf(datFile,"\n");
@@ -196,16 +205,19 @@ int main()
             }
         }
     }
+    /*Write nodes to file radius.txt and time.txt*/
     for (n = 0; n< numberIntervalTimes; n++) {
         for(i=0; i<numberNodeRadius; i++){
             fprintf(timeFile,"%d\t%lf\n",n,nTime(n));
             fprintf(radiusFile,"%lf\n",iRadius(i));
         }
     }
+    /*Write nodes to file angular.txt*/
     for(j=0; j<numberNodeAngular; j++){
         fprintf(angularFile,"%lf\t",jAngular(j));
     }
 
+    /*Write input parameters of method to file*/
     fprintf( inputFile, "Calculation time \t %lf \t [s]\n", calculationTime);
     fprintf( inputFile, "Number of interval times  \t %d\n", numberIntervalTimes);
     fprintf( inputFile, "Time interval \t %lf \t[s]\n", deltaTime);
@@ -213,7 +225,7 @@ int main()
     fprintf( inputFile, "Radius interval \t %lf [m]\n", deltaRadius);
     fprintf( inputFile, "Number of interval angular  \t %d\n", numberNodeAngular);
     fprintf( inputFile, "Angular interval \t %lf \t[rad]\n", deltaAngular);
-
+    /*Write input parameters of problems to file*/
     fprintf( inputFile, "Thermal conductivity \t %lf \t[J/K]\n", lamda);
     fprintf( inputFile, "Density \t %lf \t[kg/m3]\n", rho);
     fprintf( inputFile, "Heat specific pressure constant \t %lf \t[J/(kg.K)]\n", cp);
@@ -229,18 +241,23 @@ int main()
     fclose(radiusFile);
     fclose(angularFile);
 
-    /*Print the input on the screen, finish the program*/
+    /*Finish the program. Prompt message to user and remind user to open file Analysis Graph*/
     printResult();
-    printf("\nEnd of program! Open the file excel 'Analysis Graph' in folder result to exploit result of program.\n");
+    printf("\n\nEnd of program! \n\nPlease open the file excel 'Analysis Graph' in folder 'result' to exploit result of program.\n");
     system("pause");
     return 0;
 }
+/*
+Function to ask user for input parameters of problem, which include:
+1. Physical parameters of problem.
+2. Mathematical parameters of method.
+*/
 void    getInput(){
     double flag;
     int d;
 
     printf( " Please select an option: \n");
-    printf( " 1. Run default test program, type 1\n");
+    printf( " 1. Run test program with Cu as material and default configuration of method, type 1\n");
     printf( " 2. Run new program, type 2 \n");
     scanf("%d", &d);
     runtTestProgram = d;
@@ -300,8 +317,12 @@ void    getInput(){
     printf("\n|--------------------------------------------------|\n");
     printf("\n|--------------------------------------------------|\n");
 }
-
+/*
+Function to print result message on screen for user.
+*/
 void printResult(){
+    printf("\n|--------------------------------------------------|\n");
+    printf("\n|--------------------------------------------------|\n");
     printf("\n|--------------------Calculation-------------------|\n");
 
     printf( " Thermal conductivity: \t %lf [J/K]\n", lamda);
@@ -318,6 +339,10 @@ void printResult(){
     printf( "\n Radius interval: \t %lf [m]\n", deltaRadius);
     printf( "\n Number of interval angular : \t %d\n", numberNodeAngular);
     printf( "\n Angular interval: \t %lf [rad]\n", deltaAngular);
+
+    printf("\n|-----------------------Finish---------------------|\n");
+    printf("\n|--------------------------------------------------|\n");
+    printf("\n|--------------------------------------------------|\n");
 }
 /*
 Function to calculate the temperature at a node [i,j]

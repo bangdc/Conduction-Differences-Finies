@@ -1,0 +1,179 @@
+Sub ExploitResult()
+'
+' ExploitResult Macro
+' Exploit result by plotting graph of temperature at a selected time
+'
+    Call CopyData
+    Call CreateTable
+    Call TimeFilter
+    Call CreateScrollbar
+'
+End Sub
+
+Sub CopyData()
+    Worksheets("Data").Activate
+    Dim rng As Range
+    Set rng = Range(Range("A1"), Range("A1").SpecialCells(xlLastCell))
+    rng.EntireRow.Delete
+    
+    Set dataFile = Workbooks.Open(ThisWorkbook.Path & "\data.txt")
+    dataFile.Sheets(1).Range("A1").CurrentRegion.Copy _
+        ThisWorkbook.Sheets("Data").Range("D2")
+    dataFile.Close (False)
+    
+    Set timeFile = Workbooks.Open(ThisWorkbook.Path & "\time.txt")
+    timeFile.Sheets(1).Range("A1").CurrentRegion.Copy _
+        ThisWorkbook.Sheets("Data").Range("A2")
+    timeFile.Close (False)
+    
+    Set angularFile = Workbooks.Open(ThisWorkbook.Path & "\angular.txt")
+    angularFile.Sheets(1).Range("A1").CurrentRegion.Copy _
+        ThisWorkbook.Sheets("Data").Range("D1")
+    angularFile.Close (False)
+    
+    Set radiusFile = Workbooks.Open(ThisWorkbook.Path & "\radius.txt")
+    radiusFile.Sheets(1).Range("A1").CurrentRegion.Copy _
+        ThisWorkbook.Sheets("Data").Range("C2")
+    radiusFile.Close (False)
+    
+    Set inputFile = Workbooks.Open(ThisWorkbook.Path & "\input.txt")
+    inputFile.Sheets(1).Range("A1").CurrentRegion.Copy _
+        ThisWorkbook.Sheets("Input").Range("A1")
+    inputFile.Close (False)
+    
+    ThisWorkbook.Sheets("Data").Range("A1").Value = "Interval"
+    ThisWorkbook.Sheets("Data").Range("B1").Value = "Time"
+    ThisWorkbook.Sheets("Data").Range("C1").Value = "Radius"
+    ThisWorkbook.Sheets("Graph").Range("A1").Value = "Interval"
+    ThisWorkbook.Sheets("Graph").Range("A2").Value = 0
+End Sub
+
+Sub TimeFilter()
+'
+' TimeFilter Macro
+' Select a specific time to plot graph
+    Worksheets("Graph").Activate
+    
+    Dim rng As Range
+    Set rng = Range(Range("A3"), Range("A3").SpecialCells(xlLastCell))
+    rng.EntireRow.Delete
+    
+    Sheets("Data").Range("tblTemperature[#All]").AdvancedFilter Action:=xlFilterCopy, _
+    CriteriaRange:=Sheets("Graph").Range("A1:A2"), _
+    CopyToRange:=Sheets("Graph").Range("A3"), _
+    Unique:=False
+    
+    Dim newrng As Range
+    Set newrng = Range(Range("A3"), Range("A3").SpecialCells(xlLastCell))
+    
+    Sheets("Graph").ListObjects.Add(xlSrcRange, newrng, , xlYes).Name = "x"
+    
+    Call PlotGraph
+'
+End Sub
+
+Sub CreateTable()
+'
+' CreateTable Macro
+' Create table of data
+'
+    
+    Dim newrng As Range
+    Set newrng = Range(Range("A1"), Range("A1").SpecialCells(xlLastCell))
+    Sheets("Data").ListObjects.Add(xlSrcRange, newrng, , xlYes).Name = "tblTemperature"
+'
+End Sub
+
+Sub PlotGraph()
+'
+' PlotGraph Macro
+'
+
+'
+    
+    Call DeleteChart
+    
+    Sheets("Graph").Activate
+    
+    Dim lastCol As Integer
+    Dim lastRow As Integer
+    Dim radiusColumn As String
+    
+    
+    lastCol = 4 + Sheets("Input").Range("B6").Value - 1
+    lastRow = 3 + Sheets("Input").Range("B4").Value
+    radiusColumn = "=Graph!$C$4:$C$" & lastRow
+    
+    Sheets("Graph").Range(Cells(3, 4), Cells(lastRow, lastCol)).Select
+    ActiveSheet.Shapes.AddChart2(307, xlSurface).Select
+    ActiveChart.SetSourceData Source:=Sheets("Graph").Range(Cells(3, 4), Cells(lastRow, lastCol))
+    With ActiveChart.Parent
+         .Height = 325
+         .Width = 500
+         .Top = 70
+         .Left = 70
+     End With
+    ActiveChart.Axes(xlCategory).Select
+    ActiveChart.PlotArea.Select
+    ActiveChart.FullSeriesCollection(1).XValues = radiusColumn
+    ActiveChart.ChartTitle.Select
+    ActiveChart.ChartTitle.Text = "Temperature at " & Range("B4").Value & " seconds"
+    Selection.Format.TextFrame2.TextRange.Characters.Text = _
+        "Temperature at " & Range("B4").Value & " seconds"
+    
+   
+    'ActiveChart.ChartArea.Select
+    ActiveChart.SetElement (msoElementPrimaryCategoryAxisTitleAdjacentToAxis)
+    Selection.Format.TextFrame2.TextRange.Characters.Text = "Radius (m)"
+    ActiveChart.SetElement (msoElementSeriesAxisTitleRotated)
+    ActiveChart.Axes(xlSeries, xlPrimary).AxisTitle.Text = "Angular (Rad)"
+    Selection.Format.TextFrame2.TextRange.Characters.Text = "Angular (Rad)"
+    
+    ActiveChart.ChartArea.Select
+End Sub
+
+Sub DeleteChart()
+'
+' DeleteChart Macro
+'
+
+'
+    Worksheets("Graph").Activate
+    Dim chtObj As ChartObject
+    For Each chtObj In ActiveSheet.ChartObjects
+        chtObj.Delete
+    Next
+End Sub
+
+Sub CreateScrollbar()
+'
+' CreateScrollbar Macro
+' Scrollbar to select the time of plotting temperature graph
+'
+
+'
+    Call DeleteScrollbars
+    ActiveSheet.ScrollBars.Add(717.75, 120.75, 48.75, 146.25).Select
+    With Selection
+        .Value = 0
+        .Min = 0
+        .Max = ThisWorkbook.Sheets("Input").Range("B2").Value - 1
+        .SmallChange = 1
+        .LargeChange = 1
+        .LinkedCell = "$A$2"
+        .Display3DShading = True
+    End With
+    Selection.OnAction = "TimeFilter"
+End Sub
+
+Sub DeleteScrollbars()
+'
+' Macro2 Macro
+'
+    Worksheets("Graph").Activate
+    ActiveSheet.ScrollBars.Delete
+    
+'
+End Sub
+
+
